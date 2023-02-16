@@ -1,0 +1,89 @@
+Metadata:
+    name: risiOS Lite
+    version: 37
+    codename: The Beautiful
+    base: fedora
+    identifier: risios
+    url: https://risi.io
+    os_release:
+      ID: risios
+Packages:
+    added:
+        - adw-gtk-theme
+        - anaconda-risi
+        - plymouth-theme-risi-spinner
+        - risi-script
+        - risi-tweaks
+        - risi-welcome
+        - risi-zsh-plugins
+        - risios-release
+        - risios-logos
+        - risios-repositories
+        - risios-backgrounds-37
+        - risios-bookmarks
+        - webapp-manager
+        - risios-bookmarks
+        - risifetch
+        - zsh
+        - flatpak-timeout-fix
+        - rtheme-lib
+        - rtheme-d
+        - rtheme-plugin-gtk3
+        - rtheme-plugin-gtk4
+        - drawing
+        - file-roller
+        - chromium
+        - onlyoffice-desktopeditors
+    removed:
+        - abrt-desktop
+        - fedora-release-xfce
+        - fedora-workstation-backgrounds
+        - rhythmbox
+        - mediawriter
+        - gnome-boxes
+        - fedora-bookmarks
+        - cheese
+        - libreoffice*
+        - unoconv
+        - firefox
+        - gnome-extensions-app
+        - systemd-networkd
+KickStartBuilder:
+    base_kickstarts:
+        - fedora-live-xfce.ks
+    base_version: f37
+    base_git_url: https://pagure.io/fedora-kickstarts.git
+    base_git_branch: f37
+    mock_chroot: fedora-37-x86_64
+    repositories:
+        risiOS:
+            baseurl: https://download.copr.fedorainfracloud.org/results/risi/risiOS/fedora-37-$basearch
+            cost: 1
+        OnlyOffice:
+            baseurl: https://download.onlyoffice.com/repo/centos/main/noarch/
+    size: 6500
+    custom_code: |
+        %post
+        # Edit fedora-welcome to use risiOS name (code from Ultramarine, thanks)
+        sed -i 's/Fedora/risiOS/g' /usr/share/anaconda/gnome/fedora-welcome
+        cat << EOF >>/home/liveuser/Desktop/liveinst.desktop
+        visibleName=Install risiOS
+        EOF
+
+        # Prevent risiWelcome from popping up on Live Media
+        printf "[io.risi.Welcome]\nstartup-show = false" >> /usr/share/glib-2.0/schemas/00_risi.gschema.override
+
+        # Edit favorite apps on ISO
+
+        cat >> /etc/rc.d/init.d/livesys << EOF
+        rm /usr/share/glib-2.0/schemas/org.gnome.shell.gschema.override
+
+        cat >> /usr/share/glib-2.0/schemas/org.gnome.shell.gschema.override << FOE
+        [org.gnome.shell]
+        favorite-apps=['chromium-browser.desktop', 'chromium-freeworld.desktop', 'org.gnome.Nautilus.desktop','org.gnome.Calendar.desktop', 'org.gnome.Photos.desktop', 'org.gnome.Totem.desktop', 'anaconda.desktop']
+        FOE
+
+        glib-compile-schemas /usr/share/glib-2.0/schemas
+        EOF
+
+        %end

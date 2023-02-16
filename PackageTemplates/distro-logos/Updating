@@ -1,0 +1,40 @@
+Files to update:
+
+anaconda
+	anaconda_header.png
+	anaconda_header_classic.png
+	sidebar-logo.png
+	sidebar_logo_classic.png
+icons
+	hicolor
+		48x48
+			apps
+				fedora-logo-icon.png
+				fedora-logo-icon-symbolic.png
+				org.fedoraproject.AnacondaInstaller.png
+				{distroid}-logo-icon.png
+		scalable
+			apps
+				fedora-logo-icon.svg
+				{distroid}-logo-icon.svg
+		symbolic
+			apps
+				fedora-logo-icon-symbolic.svg
+				{distroid}-logo-icon-symbolic.svg
+pixmaps
+	fedora-gdm-logo.png
+	fedora-logo.png
+	fedora_logo_med.png
+	fedora-logo-small.png
+	fedora-logo-sprite.png
+	fedora-logo-sprite.svg
+	fedora_whitelogo.png
+	fedora_whitelogo_med.png
+	fedora_whitelogo_small.png
+	system-logo-white.png
+
+Needed Files:
+logo.svg
+logo_symbolic.svg
+typed_logo_white.svg
+typed_logo_black.svg

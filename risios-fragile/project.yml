@@ -1,7 +1,7 @@
 Metadata:
     name: risiOS
-    version: 38
-    codename: The Cure
+    version: 39
+    codename: The Fragile
     base: fedora
     identifier: risios
     url: https://risi.io
@@ -54,13 +54,13 @@ Packages:
 KickStartBuilder:
     base_kickstarts:
         - fedora-live-workstation.ks
-    base_version: f38
+    base_version: f39
     base_git_url: https://pagure.io/fedora-kickstarts.git
-    base_git_branch: f38
-    mock_chroot: fedora-38-x86_64
+    base_git_branch: main
+    mock_chroot: fedora-rawhide-x86_64
     repositories:
         risiOS:
-            baseurl: https://download.copr.fedorainfracloud.org/results/risi/risiOS/fedora-38-$basearch
+            baseurl: https://download.copr.fedorainfracloud.org/results/risi/risiOS/fedora-$releasever-$basearch
             cost: 1
         OnlyOffice:
             baseurl: https://download.onlyoffice.com/repo/centos/main/noarch/

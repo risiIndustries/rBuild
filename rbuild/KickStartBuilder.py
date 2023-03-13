@@ -150,7 +150,7 @@ class KickStartBuilder(Base.IsoBuilder):
             "git", "clone", self._kickstart_git_repo, "-b",
             self._kickstart_git_branch, "--depth=1", "kickstarts"
         ])
-        time.sleep(30)
+        time.sleep(3)
 
         if git.returncode != 0:
             raise RuntimeError("Failed to download kickstarts")
@@ -196,8 +196,9 @@ class KickStartBuilder(Base.IsoBuilder):
         flatten_ks = subprocess.run([
             "ksflatten", "-v,", "--config", "base.ks",
             "-o", f"{directory}/flat.ks", "--version", self._base_kickstart_version
-        ])
+        ], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         if flatten_ks.returncode != 0:
+            print(flatten_ks.stdout, flatten_ks.stderr)
             raise RuntimeError("Failed to flatten kickstart")
 
         return f"{directory}/flat.ks"

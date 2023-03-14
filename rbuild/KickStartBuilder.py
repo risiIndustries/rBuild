@@ -1,6 +1,7 @@
 import os
 import shutil
 import sys
+from pathlib import Path
 
 import rbuild as Base
 import subprocess
@@ -186,11 +187,11 @@ class KickStartBuilder(Base.IsoBuilder):
         with open("base.ks", "w") as f:
             f.write("\n".join(ks))
 
-        return_str = old_dir + "/flat.ks"
         flatks = self.flatten_kickstart(old_dir)
         os.chdir(old_dir)
         cleanup_kickstarts()
         return flatks
+
 
     def flatten_kickstart(self, directory) -> str:
         flatten_ks = subprocess.run([
@@ -285,16 +286,35 @@ class KickStartBuilder(Base.IsoBuilder):
 
     def build_iso(self):
         self._package_builder.build_packages()
-        flat_ks = self.download_flattened_kickstart()
 
         date = datetime.today().strftime('%Y%m%d')
 
         # Build the ISO
         subprocess.run(["mock", "--init", self._mock_chroot])
         self.mock_command(["--install", "pykickstart", "python3-kickstart", "lorax-lmc-novirt", "sed"])
-        self.mock_command(["--copyin", flat_ks, "flat.ks"])
+
+        try:
+            flat_ks = self.download_flattened_kickstart()
+            self.mock_command(["--copyin", flat_ks, "flat.ks"])
+        except RuntimeError:
+            print("Couldn't flatten kickstart, attempting to flatten in the mock chroot")
+            # move kickstarts directory to mock chroot
+            self.mock_command(["--copyin", os.getcwd(), "kickstarts"])
+            cleanup_kickstarts()
+
+            # flatten command in mock chroot
+            os.system(f'mock -r {self._mock_chroot} --isolation=simple --chroot '
+                      f'"ksflatten -v, --config kickstarts/base.ks -o flat.ks '
+                      f'--version {self._base_kickstart_version}"')
+
+            # cleanup
+            os.chdir(Path(os.getcwd()).parent.absolute())
+        except Exception as e:
+            print("Failed to flatten kickstart due to an unknown error. Cleaning mock.")
+            self.mock_command(["--clean"])
+            raise e
         name_spaceless = self._distro_metadata.name.replace(" ", "-")
-        iso_name = f"{name_spaceless}-Live-{self._distro_metadata.version}-{date}.iso"
+        iso_name = f"{name_spaceless}-Live-{self._distro_metadata.version}-{date}"
         subprocess.run(
             f'mock --root {self._mock_chroot} --enable-network --isolation=simple --chroot "/sbin/livemedia-creator '
             f' --ks /flat.ks --logfile /var/tmp/lmc-logs/livemedia-out.log --no-virt --resultdir '
@@ -303,13 +323,13 @@ class KickStartBuilder(Base.IsoBuilder):
             f'--releasever {self._distro_metadata.version} --macboot"',
             shell=True, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr
         )
-        os.makedirs("../build", exist_ok=True)
+        os.makedirs("build", exist_ok=True)
         self.mock_command([
             "--copyout",
             f"/var/tmp/lmc/{iso_name}.iso",
-            "build"
+            f"build/{iso_name}.iso"
         ])
-        self.mock_command(["--copyout", "/var/tmp/lmc-logs/anaconda/anaconda.log", "build"])
+        self.mock_command(["--copyout", "/var/tmp/lmc-logs/anaconda/anaconda.log", "build/anaconda.log"])
         self.mock_command(["--clean"])
 
     def write_yaml(self, yaml_file: str):
@@ -345,3 +365,7 @@ class KickStartBuilder(Base.IsoBuilder):
             ["mock", "-r", self._mock_chroot] + command,
             stdout=sys.stdout, stderr=sys.stderr, stdin=sys.stdin
         )
+
+
+class GitError(RuntimeError):
+    pass

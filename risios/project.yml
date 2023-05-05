@@ -34,6 +34,7 @@ Packages:
         - file-roller
         - chromium
         - onlyoffice-desktopeditors
+        - timeshift
     removed:
         - abrt-desktop
         - desktop-backgrounds-gnome
@@ -75,8 +76,10 @@ KickStartBuilder:
         # Prevent risiWelcome from popping up on Live Media
         printf "[io.risi.Welcome]\nstartup-show = false" >> /usr/share/glib-2.0/schemas/00_risi.gschema.override
 
-        # Edit favorite apps on ISO
+        # Prevent quick setup from starting if you open risiWelcome on live media
+        touch /usr/share/risiWelcome/quick-setup-done
 
+        # Edit favorite apps on ISO
         cat >> /etc/rc.d/init.d/livesys << EOF
         rm /usr/share/glib-2.0/schemas/org.gnome.shell.gschema.override
 

@@ -10,6 +10,7 @@ import yaml
 import time
 from datetime import datetime
 
+
 class RpmBuilder(Base.PackageBuilder):
     def __init__(self, packages: list = []):
         super().__init__(packages)
@@ -329,7 +330,8 @@ class KickStartBuilder(Base.IsoBuilder):
             f"/var/tmp/lmc/{iso_name}.iso",
             f"build/{iso_name}.iso"
         ])
-        self.mock_command(["--copyout", "/var/tmp/lmc-logs/anaconda/anaconda.log", "build/anaconda.log"])
+        self.mock_command(["--copyout", "/var/tmp/lmc-logs/livemedia-out.log", f"build/{iso_name}-livemedia-out.log"])
+        self.mock_command(["--copyout", "/var/tmp/lmc-logs/anaconda/anaconda.log", f"build/{iso_name}-anaconda.log"])
         self.mock_command(["--clean"])
 
     def write_yaml(self, yaml_file: str):
